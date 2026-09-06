@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndiaTube - Explore Indian Videos</title>
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --surface-color: #212121;
+            --text-color: #ffffff;
+            --text-secondary: #aaa;
+            --border-color: #303030;
+            --hover-color: #272727;
+            --primary-color: #ff0000;
+        }
+
+        .light-theme {
+            --bg-color: #f9f9f9;
+            --surface-color: #ffffff;
+            --text-color: #0f0f0f;
+            --text-secondary: #606060;
+            --border-color: #e5e5e5;
+            --hover-color: #f2f2f2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            background-color: var(--surface-color);
+            height: 56px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .logo-area span {
+            color: var(--text-color);
+        }
+
+        .search-area {
+            display: flex;
+            align-items: center;
+            width: 40%;
+            max-width: 600px;
+        }
+
+        .search-area input {
+            width: 100%;
+            padding: 8px 16px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 40px 0 0 40px;
+            color: var(--text-color);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-area button {
+            padding: 8px 20px;
+            background-color: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            border-radius: 0 40px 40px 0;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* Layout Container */
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 240px;
+            padding: 12px;
+            background-color: var(--surface-color);
+            overflow-y: auto;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: var(--hover-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+        }
+
+        /* Filter Chips */
+        .filter-chips {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .chip {
+            padding: 6px 12px;
+            background-color: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-color);
+        }
+
+        .chip.active, .chip:hover {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .video-card {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .thumbnail-container {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: var(--hover-color);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .thumbnail-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-info {
+            display: flex;
+            gap: 12px;
+        }
+
+        .channel-avatar {
+            width: 36px;
+            height: 36px;
+            background-color: #555;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .video-details h3 {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            line-height: 20px;
+            color: var(--text-color);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-details p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        /* Watch View (Player Screen) */
+        .watch-container {
+            display: none;
+            display: flex;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .watch-container.active {
+            display: flex;
+        }
+
+        .home-container.hidden {
+            display: none;
+        }
+
+        .player-section {
+            flex: 2;
+        }
+
+        .video-player-box {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .video-player-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .watch-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .watch-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .channel-flex {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subscribe-btn {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .sidebar-related {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .related-card {
+            display: flex;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .related-thumb {
+            width: 140px;
+            aspect-ratio: 16 / 9;
+            background-color: var(--hover-color);
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .related-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .related-info h4 {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 18px;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .related-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Mobile Layout adjustments */
+        @media (max-width: 900px) {
+            aside { display: none; }
+            .watch-container { flex-direction: column; }
+            .search-area { width: 50%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area" onclick="goHome()">
+            🇮🇳 India<span>Tube</span>
+        </div>
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="Search videos..." onkeyup="handleSearch(event)">
+            <button onclick="performSearch()">🔍</button>
+        </div>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">💡</button>
+            <div class="channel-avatar" style="width: 32px; height: 32px; font-size: 12px;">U</div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <aside>
+            <div class="sidebar-item active" onclick="filterCategory('All')">🏠 Home</div>
+            <div class="sidebar-item" onclick="filterCategory('Trending')">🔥 Trending</div>
+            <div class="sidebar-item" onclick="filterCategory('Music')">🎵 Music & Culture</div>
+            <div class="sidebar-item" onclick="filterCategory('Travel')">✈️ Incredible India</div>
+            <div class="sidebar-item" onclick="filterCategory('Food')">🍛 Desi Food</div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 12px 0;">
+            <div class="sidebar-item" onclick="alert('Feature coming soon!')">📚 Library</div>
+            <div class="sidebar-item" onclick="alert('Feature coming soon!')">🕒 History</div>
+        </aside>
+
+        <div class="main-content" id="mainContent">
+            
+            <div id="homeContainer" class="home-container">
+                <div class="filter-chips">
+                    <div class="chip active" onclick="filterCategory('All', this)">All</div>
+                    <div class="chip" onclick="filterCategory('Trending', this)">Trending</div>
+                    <div class="chip" onclick="filterCategory('Music', this)">Music</div>
+                    <div class="chip" onclick="filterCategory('Travel', this)">Travel</div>
+                    <div class="chip" onclick="filterCategory('Food', this)">Food</div>
+                    <div class="chip" onclick="filterCategory('Tech', this)">Technology</div>
+                </div>
+
+                <div class="video-grid" id="videoGrid">
+                    </div>
+            </div>
+
+            <div id="watchContainer" class="watch-container">
+                <div class="player-section">
+                    <div class="video-player-box" id="playerBox">
+                        </div>
+                    <div class="watch-title" id="watchTitle">Video Title</div>
+                    <div class="watch-meta">
+                        <div class="channel-flex">
+                            <div class="channel-avatar" id="watchAvatar">C</div>
+                            <div>
+                                <h4 id="watchChannel" style="font-size: 15px; font-weight: 500;">Channel Name</h4>
+                                <p style="font-size: 12px; color: var(--text-secondary);" id="watchSubscribers">1.2M subscribers</p>
+                            </div>
+                        </div>
+                        <button class="subscribe-btn" onclick="toggleSubscribe(this)">Subscribe</button>
+                    </div>
+                    <div style="background-color: var(--hover-color); padding: 12px; border-radius: 8px; font-size: 14px; line-height: 20px;">
+                        <p id="watchStats" style="font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">125K views • 2 days ago</p>
+                        <p id="watchDescription">Experience the wonderful and vibrant culture, incredible landscapes, and modern advancements featured in this video. Enjoy watching on IndiaTube!</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-related" id="relatedSidebar">
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Database of videos with reliable public YouTube embed IDs
+        const videos = [
+            {
+                id: 1,
+                title: "Exploring Incredible India: A Visual Journey Through Cultural Heritage",
+                channel: "Incredible India",
+                avatar: "II",
+                views: "125K views",
+                time: "2 days ago",
+                category: "Travel",
+                youtubeId: "2Vv-BfVoq4g", // Sample/Nature video safe embed or replace with valid ID
+                description: "Journey through the ancient monuments, beautiful landscapes, and vibrant traditions across various states of India."
+            },
+            {
+                id: 2,
+                title: "Top 10 Street Foods You Must Try in Mumbai & Delhi",
+                channel: "Desi Flavors",
+                avatar: "DF",
+                views: "450K views",
+                time: "1 week ago",
+                category: "Food",
+                youtubeId: "RgKAFK5djSk",
+                description: "From spicy chaat to crispy vadas, check out these mouthwatering street food delicacies straight from the heart of India's biggest food capitals."
+            },
+            {
+                id: 3,
+                title: "Traditional Classical Indian Music for Deep Focus & Relaxation",
+                channel: "Raga Waves",
+                avatar: "RW",
+                views: "89K views",
+                time: "3 days ago",
+                category: "Music",
+                youtubeId: "5qap5aO4i9A",
+                description: "Soothing sitar and flute compositions inspired by classical ragas designed to aid concentration, meditation, and peace of mind."
+            },
+            {
+                id: 4,
+                title: "The Evolution of Tech Startups in Bengaluru's Silicon Valley",
+                channel: "Tech India Today",
+                avatar: "TI",
+                views: "310K views",
+                time: "5 days ago",
+                category: "Tech",
+                youtubeId: "jfKfPfyJRdk",
+                description: "A deep dive into how Bengaluru became the tech and startup powerhouse of South Asia, housing global innovators."
+            },
+            {
+                id: 5,
+                title: "Breathtaking Himachal Pradesh: Mountains, Valleys & Snow Peaks",
+                channel: "Mountain Trails",
+                avatar: "MT",
+                views: "210K views",
+                time: "4 days ago",
+                category: "Travel",
+                youtubeId: "L_LUpnjgPso",
+                description: "Explore the serene hill stations, winding mountain passes, and welcoming culture of Himachal Pradesh."
+            },
+            {
+                id: 6,
+                title: "Traditional South Indian Filter Coffee Making Masterclass",
+                channel: "Chef's Corner India",
+                avatar: "CC",
+                views: "95K views",
+                time: "6 days ago",
+                category: "Food",
+                youtubeId: "kJQP7kiw5Fk",
+                description: "Learn the art of brewing authentic South Indian filter coffee with the traditional brass dabarah set."
+            }
+        ];
+
+        let currentCategory = 'All';
+
+        // Initialize App on Load
+        window.onload = function() {
+            renderVideos(videos);
+        };
+
+        // Render Video Cards to Grid
+        function renderVideos(videoArray) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+
+            if (videoArray.length === 0) {
+                grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1/-1; text-align: center; padding: 40px;">No videos found matching your search.</p>`;
+                return;
+            }
+
+            videoArray.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => openVideo(video.id);
+                
+                // Using standard high-quality YouTube thumbnail preview images
+                const thumbUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+
+                card.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="${thumbUrl}" alt="${video.title}" loading="lazy">
+                    </div>
+                    <div class="video-info">
+                        <div class="channel-avatar">${video.avatar}</div>
+                        <div class="video-details">
+                            <h3>${video.title}</h3>
+                            <p>${video.channel}</p>
+                            <p>${video.views} • ${video.time}</p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Open specific video in watch view
+        function openVideo(id) {
+            const video = videos.find(v => v.id === id);
+            if (!video) return;
+
+            document.getElementById('homeContainer').classList.add('hidden');
+            document.getElementById('watchContainer').classList.add('active');
+
+            // Inject player iframe
+            const playerBox = document.getElementById('playerBox');
+            playerBox.innerHTML = `<iframe src="https://www.youtube.com/embed/${video.youtubeId}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+
+            document.getElementById('watchTitle').innerText = video.title;
+            document.getElementById('watchChannel').innerText = video.channel;
+            document.getElementById('watchAvatar').innerText = video.avatar;
+            document.getElementById('watchStats').innerText = `${video.views} • ${video.time}`;
+            document.getElementById('watchDescription').innerText = video.description;
+
+            renderRelatedVideos(video.id);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Related Sidebar Videos
+        function renderRelatedVideos(currentId) {
+            const sidebar = document.getElementById('relatedSidebar');
+            sidebar.innerHTML = '<h4 style="margin-bottom: 8px;">Up Next</h4>';
+
+            const related = videos.filter(v => v.id !== currentId);
+
+            related.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'related-card';
+                item.onclick = () => openVideo(video.id);
+                const thumbUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+
+                item.innerHTML = `
+                    <div class="related-thumb">
+                        <img src="${thumbUrl}" alt="${video.title}">
+                    </div>
+                    <div class="related-info">
+                        <h4>${video.title}</h4>
+                        <p>${video.channel}</p>
+                        <p>${video.views}</p>
+                    </div>
+                `;
+                sidebar.appendChild(item);
+            });
+        }
+
+        // Return Home
+        function goHome() {
+            document.getElementById('watchContainer').classList.remove('active');
+            document.getElementById('homeContainer').classList.remove('hidden');
+            document.getElementById('playerBox').innerHTML = ''; // Stop video playback
+            filterCategory('All');
+        }
+
+        // Filter Category Functionality
+        function filterCategory(category, element) {
+            currentCategory = category;
+            
+            // Highlight chip if clicked via UI
+            if(element) {
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                element.classList.add('active');
+            }
+
+            if (category === 'All' || category === 'Trending') {
+                renderVideos(videos);
+            } else {
+                const filtered = videos.filter(v => v.category === category);
+                renderVideos(filtered);
+            }
+            
+            // Switch view if in watch mode
+            document.getElementById('watchContainer').classList.remove('active');
+            document.getElementById('homeContainer').classList.remove('hidden');
+            document.getElementById('playerBox').innerHTML = '';
+        }
+
+        // Search Functionality
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = videos.filter(v => 
+                v.title.toLowerCase().includes(query) || 
+                v.channel.toLowerCase().includes(query) ||
+                v.category.toLowerCase().includes(query)
+            );
+            renderVideos(filtered);
+            document.getElementById('watchContainer').classList.remove('active');
+            document.getElementById('homeContainer').classList.remove('hidden');
+            document.getElementById('playerBox').innerHTML = '';
+        }
+
+        // Toggle Theme (Dark / Light)
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        // Toggle Subscribe Button State
+        function toggleSubscribe(btn) {
+            if (btn.innerText === 'Subscribe') {
+                btn.innerText = 'Subscribed ✓';
+                btn.style.backgroundColor = '#3f3f3f';
+                btn.style.color = '#fff';
+            } else {
+                btn.innerText = 'Subscribe';
+                btn.style.backgroundColor = 'var(--text-color)';
+                btn.style.color = 'var(--bg-color)';
+            }
+        }
+    </script>
+</body>
+</html>
